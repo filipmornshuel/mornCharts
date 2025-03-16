@@ -1,7 +1,9 @@
 package ch.morn.historian.charts.mornCharts.model;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
@@ -10,6 +12,7 @@ import java.time.LocalDateTime;
 @Table(name = "users")
 @Getter
 @Setter
+@RequiredArgsConstructor
 public class User {
 
     @Id
@@ -34,5 +37,13 @@ public class User {
 
     public enum Role {
         USER, ADMIN
+    }
+
+    public User(String username, String email, String passwordHash, Role role, LocalDateTime createdAt) {
+        this.username = username;
+        this.email = email;
+        this.passwordHash = passwordHash;
+        this.role = role;
+        this.createdAt = createdAt;
     }
 }
