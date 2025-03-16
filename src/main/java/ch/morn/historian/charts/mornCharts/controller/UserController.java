@@ -6,6 +6,7 @@ import ch.morn.historian.charts.mornCharts.model.User;
 import ch.morn.historian.charts.mornCharts.repository.UserRepository;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -32,8 +33,13 @@ public class UserController {
     }
 
     @PostMapping("/users")
-    public User saveNewUser(@RequestBody User newUser) {
-        return repository.save(newUser);
+    public ResponseEntity<EntityModel<User>> saveNewUser(@RequestBody User newUser) {
+        User savedUser = repository.save(newUser);
+
+        EntityModel<User> resource = modelAssembler.toModel(savedUser);
+
+        return ResponseEntity.created(linkTo(methodOn(UserController.class).getOneUser(savedUser.getId())).toUri())
+                .body(resource);
     }
 
     @GetMapping("/users/{id}")
@@ -45,23 +51,32 @@ public class UserController {
     }
 
     @PutMapping("/users/{id}")
-    public User replaceUser(@RequestBody User newUser, @PathVariable Long id) {
-        return repository.findById(id)
+    public ResponseEntity<EntityModel<User>> replaceUser(@RequestBody User newUser, @PathVariable Long id) {
+        User updatedUser = repository.findById(id)
                 .map(user -> {
                     user.setUsername(newUser.getUsername());
                     user.setEmail(newUser.getEmail());
                     user.setPasswordHash(newUser.getPasswordHash());
                     user.setRole(newUser.getRole());
                     user.setCreatedAt(newUser.getCreatedAt());
-                    return repository.save(newUser);
+                    return repository.save(user);
                 })
                 .orElseGet(() -> {
+                    newUser.setId(id);
                     return repository.save(newUser);
                 });
+
+        EntityModel<User> resource = modelAssembler.toModel(updatedUser);
+
+        return ResponseEntity.ok(resource);
     }
 
     @DeleteMapping("/users/{id}")
-    public void deleteUser(@PathVariable Long id) {
+    public ResponseEntity<?> deleteUser(@PathVariable Long id) {
         repository.deleteById(id);
+
+        return ResponseEntity.noContent()
+                .header("Location", linkTo(methodOn(UserController.class).getAllUser()).toUri().toString())
+                .build();
     }
 }
