@@ -2,7 +2,6 @@ package ch.morn.historian.charts.mornCharts.controller.modelAssembler;
 
 import ch.morn.historian.charts.mornCharts.controller.UserController;
 import ch.morn.historian.charts.mornCharts.model.User;
-import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.server.RepresentationModelAssembler;
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;

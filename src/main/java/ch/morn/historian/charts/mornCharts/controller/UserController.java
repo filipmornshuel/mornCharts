@@ -6,6 +6,7 @@ import ch.morn.historian.charts.mornCharts.model.User;
 import ch.morn.historian.charts.mornCharts.repository.UserRepository;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.IanaLinkRelations;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -36,10 +37,10 @@ public class UserController {
     public ResponseEntity<EntityModel<User>> saveNewUser(@RequestBody User newUser) {
         User savedUser = repository.save(newUser);
 
-        EntityModel<User> resource = modelAssembler.toModel(savedUser);
+        EntityModel<User> entityModel = modelAssembler.toModel(savedUser);
 
-        return ResponseEntity.created(linkTo(methodOn(UserController.class).getOneUser(savedUser.getId())).toUri())
-                .body(resource);
+        return ResponseEntity.created(entityModel.getRequiredLink(IanaLinkRelations.SELF).toUri())
+                .body(entityModel);
     }
 
     @GetMapping("/users/{id}")
@@ -51,7 +52,7 @@ public class UserController {
     }
 
     @PutMapping("/users/{id}")
-    public ResponseEntity<EntityModel<User>> replaceUser(@RequestBody User newUser, @PathVariable Long id) {
+    public ResponseEntity<?> replaceUser(@RequestBody User newUser, @PathVariable Long id) {
         User updatedUser = repository.findById(id)
                 .map(user -> {
                     user.setUsername(newUser.getUsername());
@@ -66,17 +67,17 @@ public class UserController {
                     return repository.save(newUser);
                 });
 
-        EntityModel<User> resource = modelAssembler.toModel(updatedUser);
+        EntityModel<User> entityModel = modelAssembler.toModel(updatedUser);
 
-        return ResponseEntity.ok(resource);
+        return ResponseEntity //
+                .created(entityModel.getRequiredLink(IanaLinkRelations.SELF).toUri()) //
+                .body(entityModel);
     }
 
     @DeleteMapping("/users/{id}")
     public ResponseEntity<?> deleteUser(@PathVariable Long id) {
         repository.deleteById(id);
 
-        return ResponseEntity.noContent()
-                .header("Location", linkTo(methodOn(UserController.class).getAllUser()).toUri().toString())
-                .build();
+        return ResponseEntity.noContent().build();
     }
 }

@@ -1,10 +1,15 @@
 package ch.morn.historian.charts.mornCharts.model;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "stations")
+@Getter
+@Setter
 public class Station {
 
     @Id
@@ -44,4 +49,17 @@ public class Station {
         PENDING, APPROVED, REJECTED, DELETED
     }
 
+    public Station(String title, String description, double latitude, double longitude, Status status, User createdBy, User approvedBy, LocalDateTime createdAt, LocalDateTime approvedAt, LocalDateTime rejectedAt, LocalDateTime deletedAt) {
+        this.title = title;
+        this.description = description;
+        this.latitude = latitude;
+        this.longitude = longitude;
+        this.status = status;
+        this.createdBy = createdBy;
+        this.approvedBy = approvedBy;
+        this.createdAt = createdAt;
+        this.approvedAt = approvedAt;
+        this.rejectedAt = rejectedAt;
+        this.deletedAt = deletedAt;
+    }
 }
