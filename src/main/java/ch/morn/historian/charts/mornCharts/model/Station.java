@@ -49,6 +49,10 @@ public class Station {
         PENDING, APPROVED, REJECTED, DELETED
     }
 
+    public Station() {
+
+    }
+
     public Station(String title, String description, double latitude, double longitude, Status status, User createdBy, User approvedBy, LocalDateTime createdAt, LocalDateTime approvedAt, LocalDateTime rejectedAt, LocalDateTime deletedAt) {
         this.title = title;
         this.description = description;

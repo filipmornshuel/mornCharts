@@ -1,7 +1,11 @@
 package ch.morn.historian.charts.mornCharts.repository;
 
-import ch.morn.historian.charts.mornCharts.model.User;
+import ch.morn.historian.charts.mornCharts.model.Station;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface StationRepository extends JpaRepository<User, Long> {
+import java.util.List;
+
+public interface StationRepository extends JpaRepository<Station, Long> {
+    List<Station> findByStatus(Station.Status status);
+
 }
