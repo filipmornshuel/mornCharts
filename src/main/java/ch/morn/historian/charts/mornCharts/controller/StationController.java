@@ -1,66 +1,52 @@
 package ch.morn.historian.charts.mornCharts.controller;
 
-import ch.morn.historian.charts.mornCharts.controller.modelAssembler.StationModelAssembler;
 import ch.morn.historian.charts.mornCharts.exception.StationNotFoundException;
 import ch.morn.historian.charts.mornCharts.model.Station;
 import ch.morn.historian.charts.mornCharts.repository.StationRepository;
-import org.springframework.hateoas.CollectionModel;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.hateoas.IanaLinkRelations;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.stream.Collectors;
-
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
+@RequestMapping("/stations")
 public class StationController {
+
     private final StationRepository repository;
-    private final StationModelAssembler modelAssembler;
 
-    public StationController(StationRepository repository, StationModelAssembler modelAssembler) {
+    public StationController(StationRepository repository) {
         this.repository = repository;
-        this.modelAssembler = modelAssembler;
     }
 
-
-    @GetMapping("/stations")
-    public CollectionModel<EntityModel<Station>> getAllStation() {
-        List<EntityModel<Station>> stations = repository.findAll().stream()
-                .map(modelAssembler::toModel)
-                .collect(Collectors.toList());
-        return CollectionModel.of(stations, linkTo(methodOn(StationController.class).getAllStation()).withSelfRel());
+    // GET /stations - Alle Stationen abrufen
+    @GetMapping
+    public List<Station> getAllStations() {
+        return repository.findAll();
     }
 
-    @PostMapping("/stations")
-    public ResponseEntity<EntityModel<Station>> saveNewStation(@RequestBody Station newStation) {
+    // GET /stations/{id} - Eine bestimmte Station abrufen
+    @GetMapping("/{id}")
+    public ResponseEntity<Station> getOneStation(@PathVariable Long id) {
+        Station station = repository.findById(id)
+                .orElseThrow(() -> new StationNotFoundException(id));
+        return ResponseEntity.ok(station);
+    }
+
+    // POST /stations - Neue Station erstellen
+    @PostMapping
+    public ResponseEntity<Station> saveNewStation(@RequestBody Station newStation) {
         Station savedStation = repository.save(newStation);
-
-        EntityModel<Station> entityModel = modelAssembler.toModel(savedStation);
-
-        return ResponseEntity.created(entityModel.getRequiredLink(IanaLinkRelations.SELF).toUri())
-                .body(entityModel);
+        return ResponseEntity.ok(savedStation);
     }
 
-    @GetMapping("/stations/{id}")
-    public EntityModel<Station> getOneStation(@PathVariable Long id) {
-        Station station = repository.findById(id).orElseThrow(() -> new StationNotFoundException(id));
-
-        return modelAssembler.toModel(station);
-
-    }
-
-    @PutMapping("/stations/{id}")
-    public ResponseEntity<?> replaceStation(@RequestBody Station newStation, @PathVariable Long id) {
+    // PUT /stations/{id} - Station aktualisieren oder neu anlegen
+    @PutMapping("/{id}")
+    public ResponseEntity<Station> replaceStation(@RequestBody Station newStation, @PathVariable Long id) {
         Station updatedStation = repository.findById(id)
                 .map(station -> {
-                    station.(newStation.get());
-                    station.setEmail(newStation.getEmail());
-                    station.setPasswordHash(newStation.getPasswordHash());
-                    station.setRole(newStation.getRole());
+                    // Beispielhafte Setter, bitte durch echte Felder ersetzen
+                    station.setName(newStation.getName());
+                    station.setLocation(newStation.getLocation());
                     station.setCreatedAt(newStation.getCreatedAt());
                     return repository.save(station);
                 })
@@ -69,17 +55,16 @@ public class StationController {
                     return repository.save(newStation);
                 });
 
-        EntityModel<Station> entityModel = modelAssembler.toModel(updatedStation);
-
-        return ResponseEntity //
-                .created(entityModel.getRequiredLink(IanaLinkRelations.SELF).toUri()) //
-                .body(entityModel);
+        return ResponseEntity.ok(updatedStation);
     }
 
-    @DeleteMapping("/stations/{id}")
-    public ResponseEntity<?> deleteStation(@PathVariable Long id) {
+    // DELETE /stations/{id} - Station löschen
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteStation(@PathVariable Long id) {
+        if (!repository.existsById(id)) {
+            throw new StationNotFoundException(id);
+        }
         repository.deleteById(id);
-
         return ResponseEntity.noContent().build();
     }
 }
